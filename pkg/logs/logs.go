@@ -14,6 +14,7 @@ import (
 
 	"github.com/DataDog/datadog-agent/pkg/util/log"
 
+	"github.com/DataDog/datadog-agent/pkg/logs/client/http"
 	"github.com/DataDog/datadog-agent/pkg/logs/config"
 	"github.com/DataDog/datadog-agent/pkg/logs/scheduler"
 	"github.com/DataDog/datadog-agent/pkg/logs/service"
@@ -50,7 +51,12 @@ func Start() error {
 	adScheduler = scheduler.NewScheduler(sources, services)
 
 	// setup the server config
-	endpoints, err := config.BuildEndpoints()
+	endpoints, err := config.BuildHTTPEndpoints()
+	httpConnectivity := config.HTTPConnectivityFailure
+	if err == nil {
+		httpConnectivity = http.CheckConnectivity(endpoints.Main)
+	}
+	endpoints, err = config.BuildEndpoints(httpConnectivity)
 	if err != nil {
 		message := fmt.Sprintf("Invalid endpoints: %v", err)
 		status.AddGlobalError(invalidEndpoints, message)
