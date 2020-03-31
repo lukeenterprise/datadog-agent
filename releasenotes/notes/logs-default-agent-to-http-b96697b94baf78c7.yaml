@@ -1,0 +1,4 @@
+---
+upgrade:
+  - |
+    Default logs-agent to use HTTPS with compression when possible.
