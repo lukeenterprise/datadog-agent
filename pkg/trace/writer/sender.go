@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"net/http"
@@ -307,11 +309,19 @@ func (s *sender) do(req *http.Request) error {
 	req.Header.Set(headerAPIKey, s.cfg.apiKey)
 	req.Header.Set(headerUserAgent, userAgent)
 	resp, err := s.cfg.client.Do(req)
+
 	if err != nil {
 		// request errors include timeouts or name resolution errors and
 		// should thus be retried.
 		return &retriableError{err}
 	}
+
+	// From https://golang.org/pkg/net/http/#Response:
+	// The default HTTP client's Transport may not reuse HTTP/1.x "keep-alive"
+	// TCP connections if the Body is not read to completion and closed.
+	io.Copy(ioutil.Discard, resp.Body)
+	resp.Body.Close()
+
 	if resp.StatusCode/100 == 5 {
 		// 5xx errors can be retried
 		return &retriableError{
