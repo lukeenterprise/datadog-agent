@@ -63,12 +63,11 @@ func Start() error {
 	adScheduler = scheduler.NewScheduler(sources, services)
 
 	// setup the server config
-	endpoints, err := config.BuildHTTPEndpoints()
 	httpConnectivity := config.HTTPConnectivityFailure
-	if err == nil {
+	if endpoints, err := config.BuildHTTPEndpoints(); err == nil {
 		httpConnectivity = http.CheckConnectivity(endpoints.Main)
 	}
-	endpoints, err = config.BuildEndpoints(httpConnectivity)
+	endpoints, err := config.BuildEndpoints(httpConnectivity)
 	if err != nil {
 		message := fmt.Sprintf("Invalid endpoints: %v", err)
 		status.AddGlobalError(invalidEndpoints, message)

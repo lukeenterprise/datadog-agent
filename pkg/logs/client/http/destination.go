@@ -30,6 +30,9 @@ var (
 	errServer = errors.New("server error")
 )
 
+// emptyPayload is an empty payload used to check HTTP connectivity without sending logs.
+var emptyPayload []byte
+
 // Destination sends a payload over HTTP.
 type Destination struct {
 	url                 string
@@ -165,7 +168,7 @@ func CheckConnectivity(endpoint config.Endpoint) config.HTTPConnectivity {
 	ctx.Start()
 	defer ctx.Stop()
 	destination := NewDestination(endpoint, JSONContentType, ctx)
-	err := destination.Send(nil)
+	err := destination.Send(emptyPayload)
 	if err != nil {
 		log.Warnf("logs-agent HTTP connectivity KO: %v", err)
 	} else {
