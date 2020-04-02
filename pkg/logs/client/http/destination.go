@@ -163,16 +163,17 @@ func buildContentEncoding(endpoint config.Endpoint) ContentEncoding {
 
 // CheckConnectivity check if sending logs through HTTP works
 func CheckConnectivity(endpoint config.Endpoint) config.HTTPConnectivity {
-	log.Info("Checking logs-agent HTTP connectivity...")
+	log.Info("Checking HTTP connectivity...")
 	ctx := client.NewDestinationsContext()
 	ctx.Start()
 	defer ctx.Stop()
 	destination := NewDestination(endpoint, JSONContentType, ctx)
+	log.Infof("Sending HTTP connectivity request to %s...", destination.url)
 	err := destination.Send(emptyPayload)
 	if err != nil {
-		log.Warnf("logs-agent HTTP connectivity KO: %v", err)
+		log.Warnf("HTTP connectivity failure: %v", err)
 	} else {
-		log.Info("logs-agent HTTP connectivity OK")
+		log.Info("HTTP connectivity successful")
 	}
 	return err == nil
 }
